@@ -13,7 +13,7 @@ const render = async () => {
             <a href=#${poke.name} >${poke.name}</a>
         `
     })
-    allPokeDiv.innerHTML = pokeList.join("")
+    
 
     const name = window.location.hash.slice(1)
     console.log(name)
@@ -23,27 +23,54 @@ const render = async () => {
     })
     console.log(singlePoke)
 
-    if(singlePoke){
-        const pokeData = await fetch(singlePoke.url)
-        const singlePokeData = await pokeData.json()
-        console.log(singlePokeData)
+    //if i found a single pokemon empty the allpokediv
+    //else show me the list of pokemon
 
-        singlePokeDiv.innerHTML = `
-            <h2>Selected Pokemon</h2>
-            <h2>${singlePokeData.name}</h2>
-            <img src=${singlePokeData.sprites.back_default} />
-        `
-
-    }
+    allPokeDiv.innerHTML = singlePoke ? fetchSinglePokemon(singlePoke) : `<div id="pokeContainer">${pokeList.join("")}</div>`
 
 }
 
 const fetchAllPokemons = async () => {
-    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=100&offset=0")
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=251&offset=0")
     const data = await response.json()
     console.log(data.results)
-    pokemons = data.results
-    render()
+    //pokemons = data.results
+    return data.results
+    
 }
 
-fetchAllPokemons()
+const fetchSinglePokemon = async (singlePoke) => {
+
+        const pokeData = await fetch(singlePoke.url)
+        const singlePokeData = await pokeData.json()
+        console.log(singlePokeData)
+        renderSinglePokemon(singlePokeData)
+       
+}
+
+const renderSinglePokemon = (singlePokeData) => {
+     //console.log(singlePokeData.abilities)
+     const abilites = singlePokeData.abilities.map((ability) => {
+        //console.log(ability.ability.name)
+        return `<p>${ability.ability.name}</p>`
+    })
+
+    allPokeDiv.innerHTML = `
+        <h2>Selected Pokemon</h2>
+        <h2>${singlePokeData.name}</h2>
+        <img src=${singlePokeData.sprites.back_default} />
+        <h3>Abilites: <h3>
+    ` + abilites.join("") + `
+        <p>Generation: ${singlePokeData.id*1 <= 151 ? "1": "2"}</p>
+        <a href=#>Back to all Pokemon</a>
+    `
+
+}
+
+const init = async () => {
+    const pokeData = await fetchAllPokemons()
+    console.log(pokeData)
+    pokemons = pokeData
+    render()
+}
+init()
